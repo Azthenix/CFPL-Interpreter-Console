@@ -28,15 +28,6 @@ namespace CFPL_Interpreter_Console
             {-1, -1, -1, 2}
         };
 
-        // int[,] checkNumAssDFA = new int[6, 7]{
-        //     {1, -1, -1, -1, -1, -1, -1},
-        //     {-1, 2, 4, -1, -1, -1, -1},
-        //     {3, -1, -1, 5, 4, -1, -1},
-        //     {-1, 2, 4, -1, -1, -1, 4},
-        //     {5, -1, -1, 5, 4, -1, -1},
-        //     {-1, -1, -1, -1, -1, 5, 4}
-        // };
-
         int[,] checkNumAssDFA = new int[6, 8]{
             {1, -1, -1, -1, -1, -1, -1, -1},
             {-1, 2, -1, -1, -1, 4, -1, -1},
@@ -1426,100 +1417,6 @@ namespace CFPL_Interpreter_Console
                 x++;
             }
         }
-
-        // void addInputToken(ref List<Token> inputList, string literal, int ctr)
-        // {
-
-        //     if (reserved.Contains(literal))
-        //     {
-        //         if (literal == "TRUE" || literal == "FALSE")
-        //         {
-        //             inputList.Add(new Token(Lexeme.BOOLEAN, literal, ctr));
-        //         }
-        //         else
-        //         {
-        //             inputList.Add(new Token(Enum.Parse<Lexeme>(literal), null, ctr));
-        //         }
-        //         return;
-        //     }
-        //     if (Char.IsDigit(literal[0]))
-        //     {
-        //         if (!literal.All(x => Char.IsDigit(x) || x == '.'))
-        //         {
-        //             throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
-        //         }
-
-        //         inputList.Add(new Token(Lexeme.NUMBER, literal, ctr));
-        //         return;
-        //     }
-
-        //     if (literal.Length == 1 && Char.IsLetter(literal[0]))
-        //     {
-        //         if (!literal.All(x => Char.IsLetter(x)))
-        //         {
-        //             throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
-        //         }
-        //         inputList.Add(new Token(Lexeme.CHARACTER, literal, ctr));
-        //         return;
-        //     }
-
-        //     if (Char.IsLetter(literal[0]) || literal[0] == '_')
-        //     {
-        //         if (!literal.All(x => Char.IsLetterOrDigit(x) || x == '_'))
-        //         {
-        //             throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
-        //         }
-        //         inputList.Add(new Token(Lexeme.IDENTIFIER, literal, ctr));
-        //         return;
-        //     }
-
-        //     throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
-        // }
-
-        // void inputAssign(string name, Token tk, int i)
-        // {
-        //     bType t = variables[name];
-
-        //     switch (t)
-        //     {
-        //         case bType.INT:
-        //             if (tk.lex != Lexeme.NUMBER)
-        //             {
-        //                 throw new ErrorException($"Cannot assign '{tk.lex}' to a variable of type INT.");
-        //             }
-        //             try
-        //             {
-        //                 intVars[name] = Convert.ToInt32(Convert.ToSingle(tk.literal));
-        //             }
-        //             catch (FormatException)
-        //             {
-        //                 throw new ErrorException($"Cannot assign '{tk.literal}' to type INT.");
-        //             }
-        //             break;
-        //         case bType.FLOAT:
-        //             if (tk.lex != Lexeme.NUMBER)
-        //             {
-        //                 throw new ErrorException($"Cannot assign '{tk.lex}' to a variable of type FLOAT.");
-        //             }
-        //             floatVars[name] = float.Parse(tk.literal);
-        //             break;
-        //         case bType.CHAR:
-        //             if (tk.lex != Lexeme.CHARACTER)
-        //             {
-        //                 throw new ErrorException($"Cannot assign '{tk.lex}' to a variable of type CHAR.");
-        //             }
-        //             charVars[name] = char.Parse(tk.literal);
-        //             break;
-        //         case bType.BOOL:
-        //             if (tk.lex != Lexeme.BOOLEAN)
-        //             {
-        //                 throw new ErrorException($"Cannot assign '{tk.lex}' to a variable of type BOOL.");
-        //             }
-        //             boolVars[name] = tk.literal == "TRUE" ? true : false;
-        //             break;
-        //     }
-
-        // }
 
         void Input(int index, ref int y)
         {
