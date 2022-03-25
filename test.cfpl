@@ -1,6 +1,8 @@
-VAR a = 10, b, c = 3 AS INT
-
+VAR abc, c AS INT
+VAR x, w_23='w' AS CHAR
+VAR t="TRUE" AS BOOL
 START
-    b = a += c -2
-    OUTPUT: b & "#" & a
+abc=5
+w_23='y'
+OUTPUT: abc & "#" & "hi" & "#" & w_23 & "[&]"
 STOP

@@ -201,6 +201,7 @@ namespace CFPL_Interpreter_Console
             .Replace("\"TRUE\"", "TRUE")
             .Replace("\"FALSE\"", "FALSE")
             .Replace("[\"]", "$DQUOTE$")
+            .Replace("[&]", "$AMP$")
             .Replace("\r", "")
             .Split('\n');
 
@@ -1299,7 +1300,7 @@ namespace CFPL_Interpreter_Console
                 switch (tokenList[x].lex)
                 {
                     case Lexeme.STRING:
-                        sb.Append(tokenList[x].literal.Replace("$DQUOTE$", "\"").Replace("$LBRACKET$", "[").Replace("$RBRACKET$", "]").Replace("#", "\n").Replace("$SHARP$", "#"));
+                        sb.Append(tokenList[x].literal.Replace("$DQUOTE$", "\"").Replace("$LBRACKET$", "[").Replace("$RBRACKET$", "]").Replace("$AMP$", "&").Replace("#", "\n").Replace("$SHARP$", "#"));
                         break;
                     case Lexeme.NUMBER:
                     case Lexeme.CHARACTER:
