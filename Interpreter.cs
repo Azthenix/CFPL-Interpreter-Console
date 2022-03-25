@@ -22,45 +22,93 @@ namespace CFPL_Interpreter_Console
         };
 
 
-        int[,] numberDeclare = new int[9, 10]{
-        // VAR iden = u/lpar const op AS TYPE , rpar
-            {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
-            {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
-            {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
-            {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
-            {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
-            {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
-            {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
-            {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
-            {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
-        };
+        // int[,] numberDeclare = new int[9, 10]{
+        // // VAR iden = u/lpar const op AS TYPE , rpar
+        //     {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
+        //     {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
+        //     {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
+        //     {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
+        //     {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
+        //     {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
+        //     {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
+        //     {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
+        //     {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
+        // };
 
+        // int[,] boolDeclare = new int[7, 7]
+        // { // VAR  iden =   bool  ,  AS BOOL
+        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
+        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
+        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
+        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
+        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
+        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
+        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
+        // };
 
-        int[,] boolDeclare = new int[9, 9]
-        { // VAR  iden =   "  T/F  "   ,  AS BOOL
-             {1,  -1, -1, -1, -1, -1, -1, -1, -1}, //0
-             {-1,  2, -1, -1, -1, -1,  1, -1, -1}, //1
-             {-1, -1,  3, -1, -1, -1, -1, -1, -1}, //2
-             {-1,  2, -1,  4, -1, -1, -1, -1, -1}, //3
-             {-1, -1, -1, -1,  5, -1, -1, -1, -1}, //4
-             {-1, -1, -1, -1, -1,  6, -1, -1, -1}, //5
-             {-1, -1, -1, -1, -1, -1,  1,  7, -1}, //6
-             {-1, -1, -1, -1, -1, -1, -1, -1,  8}, //7
-             {-1, -1, -1, -1, -1, -1, -1, -1, -1}, //8
-        };
+        // int[,] charDeclare = new int[7, 7]
+        // { // VAR  iden =   char  ,  AS BOOL
+        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
+        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
+        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
+        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
+        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
+        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
+        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
+        // };
 
-        int[,] charDeclar = new int[9, 9]
-        { // VAR  iden =   '  char '   ,  AS BOOL
-             {1,  -1, -1, -1, -1, -1, -1, -1, -1}, //0
-             {-1,  2, -1, -1, -1, -1,  1, -1, -1}, //1
-             {-1, -1,  3, -1, -1, -1, -1, -1, -1}, //2
-             {-1,  2, -1,  4, -1, -1, -1, -1, -1}, //3
-             {-1, -1, -1, -1,  5, -1, -1, -1, -1}, //4
-             {-1, -1, -1, -1, -1,  6, -1, -1, -1}, //5
-             {-1, -1, -1, -1, -1, -1,  1,  7, -1}, //6
-             {-1, -1, -1, -1, -1, -1, -1, -1,  8}, //7
-             {-1, -1, -1, -1, -1, -1, -1, -1, -1}, //8
-        };
+        //  void checkCharDeclare(int index)
+        // {
+        //     int state = 0;
+        //     int x = index;
+
+        //     while (tokenList[x].lex != Lexeme.NEWLINE)
+        //     {
+        //         switch (tokenList[x].lex)
+        //         {
+        //             case Lexeme.VAR:
+        //                 state = DeclareDFA[state, 0];
+        //                 break;
+        //             case Lexeme.IDENTIFIER:
+        //                 state = DeclareDFA[state, 1];
+        //                 break;
+        //             case Lexeme.ASSIGN:
+        //                 state = DeclareDFA[state, 2];
+        //                 break;
+        //             case Lexeme.BOOLEAN:
+        //                 state = charDeclare[state, 4];
+        //                 break;
+        //             case Lexeme.COMMA:
+        //                 state = DeclareDFA[state, 6];
+        //                 break;
+        //             case Lexeme.STRING:
+        //             case Lexeme.NUMBER:
+        //             case Lexeme.CHARACTER:
+        //             case Lexeme.BOOLEAN:
+        //                 state = DeclareDFA[state, 4];
+        //                 break;
+        //             case Lexeme.AS:
+        //                 state = DeclareDFA[state, 5];
+        //                 break;
+        //             case Lexeme.INT:
+        //             case Lexeme.FLOAT:
+        //             case Lexeme.CHAR:
+        //             case Lexeme.BOOL:
+        //                 state = DeclareDFA[state, 6];
+        //                 break;
+        //             default:
+        //                 state = -1;
+        //                 break;
+        //         }
+
+        //         if (state == -1)
+        //         {
+        //             throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+        //         }
+
+        //         x++;
+        //     }
+        // }
 
         int[,] outputDFA = new int[4, 4]{
             {1, -1, -1, -1},
