@@ -11,51 +11,54 @@ namespace CFPL_Interpreter_Console
     {
         List<Token> tokenList;
 
-        int[,] DeclareDFA = new int[7, 7]{
-            {1, -1, -1, -1, -1, -1, -1},
-            {-1, 2, -1, -1, -1, -1, -1},
-            {-1, -1, 3, 1, -1, 5, -1},
-            {-1, 4, -1, -1, 4, -1, -1},
-            {-1, -1, -1, 1, -1, 5, -1},
-            {-1, -1, -1, -1, -1, -1, 6},
-            {-1, -1, -1, -1, -1, -1, -1}
+        int[,] DeclareDFA = new int[9, 8]{
+            //VAR iden = unary const ,  AS TYPE
+            { 1,  -1, -1, -1,  -1,  -1, -1, -1}, //0
+            {-1,   2, -1, -1,  -1,  -1, -1, -1}, //1
+            {-1,  -1, 3,  -1,  -1,   2, -1, -1}, //2
+            {-1,   4, -1,  5,   6,  -1, -1, -1}, //3
+            {-1,  -1,  3, -1,  -1,  -1, -1, -1},// 4
+            {-1,  -1, -1, -1,   6,  -1, -1, -1},// 5
+            {-1,  -1, -1, -1,  -1,   2,  7, -1},// 6
+            {-1,  -1, -1, -1,  -1,  -1,  8, -1},// 7
+            {-1,  -1, -1, -1,  -1,  -1, -1, -1},// 8
         };
 
 
-        // int[,] numberDeclare = new int[9, 10]{
-        // // VAR iden = u/lpar const op AS TYPE , rpar
-        //     {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
-        //     {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
-        //     {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
-        //     {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
-        //     {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
-        //     {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
-        //     {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
-        //     {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
-        //     {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
-        // };
+        int[,] numberDeclare = new int[9, 10]{
+        // VAR iden = u/lpar const op AS TYPE , rpar
+            {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
+            {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
+            {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
+            {-1, 4, -1,  5,   6,  -1, -1, -1, -1, -1}, //3
+            {-1,-1,  1, -1,  -1,   5, -1, -1,  1, -1}, //4
+            {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
+            {-1,-1, -1, -1,  -1,   5,  7, -1,  1,  6}, //6
+            {-1,-1, -1, -1,  -1,  -1, -1,  8, -1, -1}, //7 
+            {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
+        };
 
-        // int[,] boolDeclare = new int[7, 7]
-        // { // VAR  iden =   bool  ,  AS BOOL
-        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
-        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
-        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
-        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
-        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
-        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
-        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
-        // };
+        int[,] boolDeclare = new int[7, 7]
+        { // VAR  iden =   bool  ,  AS BOOL
+             {1,  -1, -1,  -1,  -1, -1, -1}, //0
+             {-1,  2, -1,  -1,   1, -1, -1}, //1
+             {-1, -1,  3,  -1,  -1, -1, -1}, //2
+             {-1,  2, -1,   4,  -1, -1, -1}, //3
+             {-1, -1, -1,  -1,   1,  5, -1}, //4
+             {-1, -1, -1,  -1,  -1, -1,  6}, //5
+             {-1, -1, -1,  -1,   1,  7, -1}, //6
+        };
 
-        // int[,] charDeclare = new int[7, 7]
-        // { // VAR  iden =   char  ,  AS BOOL
-        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
-        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
-        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
-        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
-        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
-        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
-        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
-        // };
+        int[,] charDeclare = new int[7, 7]
+        { // VAR  iden =   char  ,  AS BOOL
+             {1,  -1, -1,  -1,  -1, -1, -1}, //0
+             {-1,  2, -1,  -1,   1, -1, -1}, //1
+             {-1, -1,  3,  -1,  -1, -1, -1}, //2
+             {-1,  2, -1,   4,  -1, -1, -1}, //3
+             {-1, -1, -1,  -1,   1,  5, -1}, //4
+             {-1, -1, -1,  -1,  -1, -1,  6}, //5
+             {-1, -1, -1,  -1,   1,  7, -1}, //6
+        };
 
         //  void checkCharDeclare(int index)
         // {
@@ -247,12 +250,20 @@ namespace CFPL_Interpreter_Console
                     {
                         lit.Append(ln[x]);
                     }
+                    else if ((ln[x] == '-' || ln[x] == '+') && Char.IsDigit(ln[x + 1]))
+                    {
+                        lit.Append(ln[x]);
+                    }
                     else
                     {
                         if (symbols.Contains(ln[x]))
                         {
                             if (lit.Length > 0)
                                 addToken(lit.ToString(), ctr);
+                            else if ((ln[x] == '-' || ln[x] == '+') && Char.IsDigit(ln[x + 1]))
+                            {
+                                lit.Append(ln[x]);
+                            }
 
                             switch (ln[x])
                             {
@@ -461,10 +472,11 @@ namespace CFPL_Interpreter_Console
                 }
                 return;
             }
-            if (Char.IsDigit(literal[0]))
+            if (Char.IsDigit(literal[0]) || literal[0] == '-' || literal[0] == '+')
             {
-                if (!literal.All(x => Char.IsDigit(x) || x == '.'))
+                if (!literal.All(x => Char.IsDigit(x) || x == '.' || x == '.' || x == '+' || x == '-'))
                 {
+
                     throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
                 }
 
@@ -494,7 +506,27 @@ namespace CFPL_Interpreter_Console
                 switch (tks[x].lex)
                 {
                     case Lexeme.VAR:
-                        checkDeclare(x);
+
+                        object type = checkDeclareType(x);
+
+                        switch (type)
+                        {
+
+                            case Lexeme.INT:
+                            case Lexeme.FLOAT:
+                                declareNum(x);
+                                break;
+                            case Lexeme.CHAR:
+                                declareChar(x);
+                                break;
+                            case Lexeme.BOOL:
+                                declareBool(x);
+                                break;
+                            default:
+                                throw new ErrorException($"Cannot resolve data type in line {tks[x].line}");
+                        }
+
+                        // checkDeclare(x);
                         Declare(x, ref x);
                         break;
                     case Lexeme.START:
@@ -513,6 +545,200 @@ namespace CFPL_Interpreter_Console
             }
         }
 
+
+        private object checkDeclareType(int x)
+        {
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.INT:
+                        return Lexeme.INT;
+                    case Lexeme.FLOAT:
+                        return Lexeme.FLOAT;
+                    case Lexeme.CHAR:
+                        return Lexeme.CHAR;
+                    case Lexeme.BOOL:
+                        return Lexeme.BOOL;
+                    default:
+                        break;
+                }
+                x++;
+            }
+            return null;
+
+        }
+
+        private void declareNum(int index)
+        {
+            bool isFloat = false;
+            int state = 0;
+            int x = index;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.VAR:
+                        state = numberDeclare[state, 0];
+                        break;
+                    case Lexeme.IDENTIFIER:
+                        state = numberDeclare[state, 1];
+                        break;
+                    case Lexeme.ASSIGN:
+                        state = numberDeclare[state, 2];
+                        break;
+                    case Lexeme.UPLUS:
+                    case Lexeme.UMINUS:
+                    case Lexeme.UAST:
+                    case Lexeme.UFSLASH:
+                    case Lexeme.UPERCENT:
+                    case Lexeme.LPAR:
+                        state = numberDeclare[state, 3];
+                        break;
+                    case Lexeme.NUMBER:
+                        if (tokenList[x].literal.Contains('.'))
+                            isFloat = true;
+
+                        state = numberDeclare[state, 4];
+
+                        break;
+                    case Lexeme.PLUS:
+                    case Lexeme.MINUS:
+                    case Lexeme.AST:
+                    case Lexeme.FSLASH:
+                    case Lexeme.PERCENT:
+                        state = numberDeclare[state, 5];
+                        break;
+                    case Lexeme.AS:
+                        state = numberDeclare[state, 6];
+                        break;
+                    case Lexeme.INT:
+                        if (isFloat)
+                            throw new ErrorException($"Cannot implicitly convert type 'FLOAT' to 'INT'.");
+                        else
+                            state = numberDeclare[state, 7];
+                        break;
+                    case Lexeme.FLOAT:
+                    case Lexeme.CHAR:
+                    case Lexeme.BOOL:
+                        state = numberDeclare[state, 7];
+                        break;
+                    case Lexeme.COMMA:
+                        state = numberDeclare[state, 8];
+                        break;
+                    case Lexeme.RPAR:
+                        state = numberDeclare[state, 9];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} : {tokenList[x].literal} on line {tokenList[x].line}.");
+                }
+                x++;
+            }
+        }
+
+        private void declareChar(int index)
+        {
+            int state = 0;
+            int x = index;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+
+                switch (tokenList[x].lex)
+                {
+
+                    case Lexeme.VAR:
+                        state = charDeclare[state, 0];
+                        break;
+                    case Lexeme.IDENTIFIER:
+                        state = charDeclare[state, 1];
+                        break;
+                    case Lexeme.ASSIGN:
+                        state = charDeclare[state, 2];
+                        break;
+                    case Lexeme.CHARACTER:
+                        state = charDeclare[state, 3];
+                        break;
+                    case Lexeme.COMMA:
+                        state = charDeclare[state, 4];
+                        break;
+                    case Lexeme.AS:
+                        state = charDeclare[state, 5];
+                        break;
+                    case Lexeme.CHAR:
+                        state = charDeclare[state, 6];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} : {tokenList[x].literal} on line {tokenList[x].line}.");
+                }
+                x++;
+            }
+        }
+
+        private void declareBool(int index)
+        {
+            int state = 0;
+            int x = index;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+
+                switch (tokenList[x].lex)
+                {
+
+                    case Lexeme.VAR:
+                        state = boolDeclare[state, 0];
+                        break;
+                    case Lexeme.IDENTIFIER:
+                        state = boolDeclare[state, 1];
+                        break;
+                    case Lexeme.ASSIGN:
+                        state = boolDeclare[state, 2];
+                        break;
+                    case Lexeme.BOOLEAN:
+                        state = boolDeclare[state, 3];
+                        break;
+                    case Lexeme.COMMA:
+                        state = boolDeclare[state, 4];
+                        break;
+                    case Lexeme.AS:
+                        state = boolDeclare[state, 5];
+                        break;
+                    case Lexeme.BOOL:
+                        state = boolDeclare[state, 6];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} : {tokenList[x].literal} on line {tokenList[x].line}.");
+                }
+                x++;
+            }
+        }
+
+
+
+
+
+
+
+
+
         void executeBody(int index, ref int y, bool skip)
         {
             int x = index;
@@ -529,43 +755,51 @@ namespace CFPL_Interpreter_Console
                             throw new ErrorException($"Illegal '{tokenList[x].literal}' on line {tokenList[x].line}.");
                         }
 
-                        switch (variables[tokenList[x].literal])
+                        try
                         {
-                            case bType.INT:
-                            case bType.FLOAT:
-                                skipTo = checkAssignToNum(x);
-                                if (skip)
-                                {
-                                    x = skipTo;
-                                }
-                                else
-                                {
-                                    assignToNum(x, ref x);
-                                }
-                                break;
-                            case bType.CHAR:
-                                skipTo = checkAssignToChar(x);
-                                if (skip)
-                                {
-                                    x = skipTo;
-                                }
-                                else
-                                {
-                                    assignToChar(x, ref x);
-                                }
-                                break;
-                            case bType.BOOL:
-                                skipTo = checkAssignToBool(x);
-                                if (skip)
-                                {
-                                    x = skipTo;
-                                }
-                                else
-                                {
-                                    assignToBool(x, ref x);
-                                }
-                                break;
+                            switch (variables[tokenList[x].literal])
+                            {
+                                case bType.INT:
+                                case bType.FLOAT:
+                                    skipTo = checkAssignToNum(x);
+                                    if (skip)
+                                    {
+                                        x = skipTo;
+                                    }
+                                    else
+                                    {
+                                        assignToNum(x, ref x);
+                                    }
+                                    break;
+                                case bType.CHAR:
+                                    skipTo = checkAssignToChar(x);
+                                    if (skip)
+                                    {
+                                        x = skipTo;
+                                    }
+                                    else
+                                    {
+                                        assignToChar(x, ref x);
+                                    }
+                                    break;
+                                case bType.BOOL:
+                                    skipTo = checkAssignToBool(x);
+                                    if (skip)
+                                    {
+                                        x = skipTo;
+                                    }
+                                    else
+                                    {
+                                        assignToBool(x, ref x);
+                                    }
+                                    break;
+                            }
                         }
+                        catch (KeyNotFoundException)
+                        {
+                            throw new ErrorException($"Variable '{tokenList[x].literal}' was not initialized.");
+                        }
+
                         break;
                     case Lexeme.WHILE:
                         checkStructure(x);
@@ -706,6 +940,7 @@ namespace CFPL_Interpreter_Console
                 }
                 else if (tokenList[x].lex == Lexeme.ASSIGN)
                 {
+                    checkMultipleAssign(x, t);
                     assign(tokenList[x - 1].literal, tokenList[x + 1], t);
                     x--;
                 }
@@ -713,6 +948,16 @@ namespace CFPL_Interpreter_Console
             }
         }
 
+        private void checkMultipleAssign(int x, bType t)
+        {
+            if (tokenList[x + 2].lex == Lexeme.ASSIGN)
+            {
+                checkMultipleAssign(x + 2, t);
+            }
+
+            assign(tokenList[x - 1].literal, tokenList[x + 1], t);
+
+        }
         float assignToNum(int index, ref int y)
         {
             int x = index;
@@ -1426,13 +1671,29 @@ namespace CFPL_Interpreter_Console
             }
         }
 
+
+        int[,] nunnmberDeclare = new int[9, 10]{
+        // VAR iden = u/lpar const op AS TYPE , rpar
+            {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
+            {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
+            {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
+            {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
+            {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
+            {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
+            {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
+            {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
+            {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
+        };
+
         void checkDeclare(int index)
         {
+            bool isFloat = false;
             int state = 0;
             int x = index;
 
             while (tokenList[x].lex != Lexeme.NEWLINE)
             {
+
                 switch (tokenList[x].lex)
                 {
                     case Lexeme.VAR:
@@ -1444,32 +1705,50 @@ namespace CFPL_Interpreter_Console
                     case Lexeme.ASSIGN:
                         state = DeclareDFA[state, 2];
                         break;
-                    case Lexeme.COMMA:
+                    case Lexeme.UPLUS:
+                    case Lexeme.UMINUS:
+                    case Lexeme.UAST:
+                    case Lexeme.UFSLASH:
+                    case Lexeme.UPERCENT:
                         state = DeclareDFA[state, 3];
                         break;
-                    case Lexeme.STRING:
                     case Lexeme.NUMBER:
+                        if (tokenList[x].literal.Contains('.'))
+                            isFloat = true;
+
+                        state = DeclareDFA[state, 4];
+                        break;
+                    case Lexeme.STRING:
                     case Lexeme.CHARACTER:
                     case Lexeme.BOOLEAN:
                         state = DeclareDFA[state, 4];
                         break;
-                    case Lexeme.AS:
+                    case Lexeme.COMMA:
                         state = DeclareDFA[state, 5];
                         break;
+
+                    case Lexeme.AS:
+                        state = DeclareDFA[state, 6];
+                        break;
                     case Lexeme.INT:
+                        if (isFloat)
+                            throw new ErrorException($"Cannot implicitly convert type 'FLOAT' to 'INT'.");
+
+                        else
+                            state = DeclareDFA[state, 7];
+                        break;
                     case Lexeme.FLOAT:
                     case Lexeme.CHAR:
                     case Lexeme.BOOL:
-                        state = DeclareDFA[state, 6];
+                        state = DeclareDFA[state, 7];
                         break;
                     default:
                         state = -1;
                         break;
                 }
-
                 if (state == -1)
                 {
-                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+                    throw new ErrorException($"Illegal {tokenList[x].lex} : {tokenList[x].literal} on line {tokenList[x].line}.");
                 }
 
                 x++;
