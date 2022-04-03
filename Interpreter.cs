@@ -494,8 +494,8 @@ namespace CFPL_Interpreter_Console
                 switch (tks[x].lex)
                 {
                     case Lexeme.VAR:
-                        checkDeclare(x);
-                        Declare(x, ref x);
+                        //checkDeclare(x);
+                        DeclareRework(x, ref x);
                         break;
                     case Lexeme.START:
                         if (tokenList[x + 1].lex != Lexeme.NEWLINE)
@@ -711,6 +711,293 @@ namespace CFPL_Interpreter_Console
                 }
                 x--;
             }
+        }
+
+        void DeclareRework(int index, ref int y)
+        {
+            int x = index;
+            while(tokenList[x+1].lex != Lexeme.NEWLINE)
+            {
+                x++;
+            }
+
+            bType t;
+
+            switch(tokenList[x].lex)
+            {
+                case Lexeme.INT:
+                    t = bType.INT;
+                    break;
+                case Lexeme.FLOAT:
+                    t = bType.FLOAT;
+                    break;
+                case Lexeme.BOOL:
+                    t = bType.BOOL;
+                    break;
+                default:
+                    t = bType.CHAR;
+                    break;
+            }
+
+            x = index;
+
+            while(tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                if(tokenList[x].lex == Lexeme.IDENTIFIER)
+                {
+                    DeclareAssign(x, ref x, t);
+                }
+
+                x++;
+            }
+
+            y = x;
+        }
+
+        void DeclareAssign(int index, ref int y, bType t)
+        {
+            int x = index;
+            if(variables.ContainsKey(tokenList[x].literal))
+            {
+                throw new ErrorException($"Variable '{tokenList[x].literal}' has already been declared previously.");
+            }
+
+            variables[tokenList[x].literal] = t;
+
+            x += 2;
+            switch(tokenList[x+1].lex)
+            {
+                case Lexeme.ASSIGN:
+                    DeclareAssign(x, ref x, t);
+                    switch(t)
+                    {
+                        case bType.INT:
+                            intVars[tokenList[index].literal] = intVars[tokenList[index+2].literal];
+                            break;
+                        case bType.FLOAT:
+                            floatVars[tokenList[index].literal] = floatVars[tokenList[index+2].literal];
+                            break;
+                        case bType.BOOL:
+                            boolVars[tokenList[index].literal] = boolVars[tokenList[index+2].literal];
+                            break;
+                        case bType.CHAR:
+                            charVars[tokenList[index].literal] = charVars[tokenList[index+2].literal];
+                            break;
+                    }
+                    break;
+                default:
+                    Object res = Evaluate(x, ref x);
+                    switch(t)
+                    {
+                        case bType.INT:
+                            if(res is not Int32)
+                            {
+                                if(res is Single)
+                                {
+                                    float r = Convert.ToSingle(res);
+                                    if(r % 1 != 0)
+                                        throw new ErrorException($"Cannot assign FLOAT to type INT on line {tokenList[x].line}.");
+                                    
+                                    intVars[tokenList[index].literal] = Convert.ToInt32(r);
+                                }
+                                else
+                                {
+                                    throw new ErrorException($"Cannot assign "+(res is bool ? "BOOL" : "CHAR")+" to type INT on line {tokenList[x].line}.");
+                                }
+                            }
+
+                            intVars[tokenList[index].literal] = Convert.ToInt32(res);
+
+                            break;
+                        case bType.FLOAT:
+                            if(res is not Int32 || res is not Single)
+                                throw new ErrorException($"Cannot assign "+(res is bool ? "BOOL" : "CHAR")+" to type FLOAT on line {tokenList[x].line}.");
+                            
+                            floatVars[tokenList[index].literal] = Convert.ToSingle(res);
+
+                            break;
+                        case bType.BOOL:
+                            if(res is not Boolean)
+                                throw new ErrorException($"Cannot assign "+(res is Int32 ? "INT" : res is Single ? "FLOAT" : "CHAR")+" to type BOOL on line {tokenList[x].line}.");
+                            
+                            boolVars[tokenList[index].literal] = Convert.ToBoolean(res);
+                            
+                            break;
+                        case bType.CHAR:
+                            if(res is not String)
+                                throw new ErrorException($"Cannot assign "+(res is Int32 ? "INT" : res is Single ? "FLOAT" : "BOOL")+" to type CHAR on line {tokenList[x].line}.");
+                            
+                            charVars[tokenList[index].literal] = res.ToString()[0];
+                            
+                            break;
+                    }
+                    break;
+            }
+
+            y = x;
+        }
+
+        // int assignToInt(int index, ref int y)
+        // {
+
+        // }
+
+        Object Evaluate(int index, ref int y)
+        {
+            int x = index;
+            DataTable dt = new DataTable();
+
+            string value;
+            string pad = "";
+
+            if (tokenList[index - 1].lex != Lexeme.ASSIGN)
+            {
+                switch (variables[tokenList[index].literal])
+                {
+                    case bType.INT:
+                        value = intVars[tokenList[index].literal].ToString();
+                        break;
+                    case bType.FLOAT:
+                        value = floatVars[tokenList[index].literal].ToString();
+                        break;
+                    default:
+                        throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                }
+
+                switch (tokenList[index + 1].lex)
+                {
+                    case Lexeme.UAST:
+                        pad = $"{value} *";
+                        break;
+                    case Lexeme.UFSLASH:
+                        pad = $"{value} /";
+                        break;
+                    case Lexeme.UPLUS:
+                        pad = $"{value} +";
+                        break;
+                    case Lexeme.UMINUS:
+                        pad = $"{value} -";
+                        break;
+                    case Lexeme.UPERCENT:
+                        pad = $"{value} %";
+                        break;
+                }
+                x += 2;
+            }
+
+            Object res = dt.Compute(pad+GetEquation(x, ref x), "");
+
+            y = x;
+
+            return res;
+        }
+
+        string GetEquation(int index, ref int y)
+        {
+            int x = index;
+
+            StringBuilder sb = new StringBuilder();
+
+            
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.IDENTIFIER:
+                        try
+                        {
+                            switch (variables[tokenList[x].literal])
+                            {
+                                case bType.INT:
+                                    sb.Append(intVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.FLOAT:
+                                    sb.Append(floatVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.CHAR:
+                                    sb.Append(charVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.BOOL:
+                                    sb.Append(boolVars[tokenList[x].literal].ToString());
+                                    break;
+                                default:
+                                    throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                            }
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            throw new ErrorException($"Use of unassigned variable '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                        }
+                        break;
+                    case Lexeme.NUMBER:
+                        sb.Append(tokenList[x].literal);
+                        break;
+                    case Lexeme.CHARACTER:
+                        sb.Append($"'{tokenList[x].literal}'");
+                        break;
+                    case Lexeme.BOOLEAN:
+                        sb.Append($"{tokenList[x].literal}");
+                        break;
+                    case Lexeme.LPAR:
+                        sb.Append("(");
+                        break;
+                    case Lexeme.RPAR:
+                        sb.Append(")");
+                        break;
+                    case Lexeme.AST:
+                        sb.Append("*");
+                        break;
+                    case Lexeme.FSLASH:
+                        sb.Append("/");
+                        break;
+                    case Lexeme.PLUS:
+                        sb.Append("+");
+                        break;
+                    case Lexeme.MINUS:
+                        sb.Append("-");
+                        break;
+                    case Lexeme.PERCENT:
+                        sb.Append("%");
+                        break;
+                    case Lexeme.GREATER:
+                        sb.Append(">");
+                        break;
+                    case Lexeme.LESSER:
+                        sb.Append("<");
+                        break;
+                    case Lexeme.EQUAL:
+                        sb.Append("=");
+                        break;
+                    case Lexeme.GEQUAL:
+                        sb.Append(">=");
+                        break;
+                    case Lexeme.LEQUAL:
+                        sb.Append("<=");
+                        break;
+                    case Lexeme.NEQUAL:
+                        sb.Append("<>");
+                        break;
+                    case Lexeme.NOT:
+                        sb.Append("NOT");
+                        break;
+                    case Lexeme.AND:
+                        sb.Append("AND");
+                        break;
+                    case Lexeme.OR:
+                        sb.Append("OR");
+                        break;
+                    default:
+                        y = ++x;
+
+                        return sb.ToString();
+                }
+                x++;
+            }
+
+            y = x;
+
+            return sb.ToString();
         }
 
         float assignToNum(int index, ref int y)
