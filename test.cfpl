@@ -1,1 +1,1 @@
-VAR x=y=-12 AS INT
+VAR x=y=-12, b = 6/2 AS INT

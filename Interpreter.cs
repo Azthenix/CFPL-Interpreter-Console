@@ -792,7 +792,7 @@ namespace CFPL_Interpreter_Console
                         case bType.INT:
                             if(res is not Int32)
                             {
-                                if(res is Single)
+                                if(res is Single || res is Decimal || res is Double)
                                 {
                                     float r = Convert.ToSingle(res);
                                     if(r % 1 != 0)
@@ -898,8 +898,6 @@ namespace CFPL_Interpreter_Console
 
             StringBuilder sb = new StringBuilder();
 
-            
-
             while (tokenList[x].lex != Lexeme.NEWLINE)
             {
                 switch (tokenList[x].lex)
@@ -988,7 +986,7 @@ namespace CFPL_Interpreter_Console
                         sb.Append("OR");
                         break;
                     default:
-                        y = ++x;
+                        y = x;
 
                         return sb.ToString();
                 }
