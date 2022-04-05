@@ -13,16 +13,16 @@ namespace CFPL_Interpreter_Console
 			// 	return;
 			// }
 			Interpreter inter = new Interpreter("test.cfpl");
-			try
-			{
+			// try
+			// {
 				inter.Run();
-			}
-			catch(ErrorException e)
-			{
-				Console.WriteLine(e.Message+"\n\nProgram exited with code -1.");
-				Console.ReadKey();
-				return;
-			}
+			// }
+			// catch(ErrorException e)
+			// {
+			// 	Console.WriteLine(e.Message+"\n\nProgram exited with code -1.");
+			// 	Console.ReadKey();
+			// 	return;
+			// }
 
 			Console.WriteLine("\n\nProgram successfully exited code 0.");
 			Console.ReadKey();
