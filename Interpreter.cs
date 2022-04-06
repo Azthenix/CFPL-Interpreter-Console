@@ -430,7 +430,7 @@ namespace CFPL_Interpreter_Console
 						x++;
 						executeBody(x, ref x, false);
 						if(x < tks.Count-1)
-							throw new ErrorException($"Unreachable code on line {tks[x].line}.");
+							throw new ErrorException($"Unreachable code on line {tks[x+1].line}.");
 						break;
 					default:
 						throw new ErrorException($"Illegal '{tks[x].lex}' on line {tks[x].line}.");

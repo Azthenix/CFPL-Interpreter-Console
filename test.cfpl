@@ -1,1 +1,4 @@
-VAR b = TRUE, x = "TRUE" AS BOOL
+START
+STOP
+
+VAR t,p AS CHAR
