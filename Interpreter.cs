@@ -381,7 +381,7 @@ namespace CFPL_Interpreter_Console
 			}
 			if (literal == "$TRUE$" || literal == "$FALSE$")
 			{
-				tokenList.Add(new Token(Lexeme.BOOLEAN, literal, ctr));
+				tokenList.Add(new Token(Lexeme.BOOLEAN, literal == "$TRUE$" ? "TRUE" : "FALSE", ctr));
 
 				return;
 			}
@@ -1058,7 +1058,7 @@ namespace CFPL_Interpreter_Console
 									sb.Append(" " + ((local?.floatVars.ContainsKey(tokenList[x].literal) ?? false) ? local.floatVars[tokenList[x].literal].ToString() : floatVars[tokenList[x].literal].ToString()));
 									break;
 								case bType.CHAR:
-									sb.Append(" '" + ((local?.charVars.ContainsKey(tokenList[x].literal) ?? false) ? local.charVars[tokenList[x].literal].ToString() : charVars[tokenList[x].literal].ToString()));
+									sb.Append(" '" + ((local?.charVars.ContainsKey(tokenList[x].literal) ?? false) ? local.charVars[tokenList[x].literal].ToString() : charVars[tokenList[x].literal].ToString()) + "'");
 									break;
 								case bType.BOOL:
 									sb.Append(" " + ((local?.boolVars.ContainsKey(tokenList[x].literal) ?? false) ? local.boolVars[tokenList[x].literal].ToString() : boolVars[tokenList[x].literal].ToString()));
@@ -1165,7 +1165,7 @@ namespace CFPL_Interpreter_Console
 									eval.Add(((local?.floatVars.ContainsKey(tokenList[x].literal) ?? false) ? local.floatVars[tokenList[x].literal].ToString() : floatVars[tokenList[x].literal].ToString()));
 									break;
 								case bType.CHAR:
-									eval.Add(((local?.charVars.ContainsKey(tokenList[x].literal) ?? false) ? local.charVars[tokenList[x].literal].ToString() : charVars[tokenList[x].literal].ToString()));
+									eval.Add("'"+((local?.charVars.ContainsKey(tokenList[x].literal) ?? false) ? local.charVars[tokenList[x].literal].ToString() : charVars[tokenList[x].literal].ToString())+"'");
 									break;
 								case bType.BOOL:
 									eval.Add(((local?.boolVars.ContainsKey(tokenList[x].literal) ?? false) ? local.boolVars[tokenList[x].literal].ToString() : boolVars[tokenList[x].literal].ToString()));
