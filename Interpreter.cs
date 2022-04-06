@@ -1406,10 +1406,10 @@ namespace CFPL_Interpreter_Console
 				switch (((local?.variables.ContainsKey(tokenList[index].literal) ?? false) ? local.variables[tokenList[index].literal] : variables[tokenList[index].literal]))
 				{
 					case bType.INT:
-						value = ((local?.intVars.ContainsKey(tokenList[index].literal) ?? false) ? local.intVars[tokenList[index].literal].ToString() : intVars[tokenList[x].literal].ToString());
+						value = ((local?.intVars.ContainsKey(tokenList[index].literal) ?? false) ? local.intVars[tokenList[index].literal].ToString() : intVars[tokenList[index].literal].ToString());
 						break;
 					case bType.FLOAT:
-						value = ((local?.floatVars.ContainsKey(tokenList[index].literal) ?? false) ? local.floatVars[tokenList[index].literal].ToString() : floatVars[tokenList[x].literal].ToString());
+						value = ((local?.floatVars.ContainsKey(tokenList[index].literal) ?? false) ? local.floatVars[tokenList[index].literal].ToString() : floatVars[tokenList[index].literal].ToString());
 						break;
 					default:
 						throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
