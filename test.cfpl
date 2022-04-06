@@ -1,4 +1,30 @@
-VAR t = "TRUE" AS BOOL
+VAR i, j, x, y AS INT
+
 START
-OUTPUT: t
-STOP
+    OUTPUT: "Input box size(x, y): "
+    INPUT: x, y
+    i = 1
+
+    WHILE(i <= y)
+    START
+        j=1
+
+        WHILE(j <= x)
+        START
+            IF(i == 1 OR i == y OR j == 1 OR j == x)
+            START
+                OUTPUT: "* "
+            STOP
+            ELSE
+            START
+                OUTPUT: "  "
+            STOP
+
+            j = j + 1
+        STOP
+
+        OUTPUT: "#"
+
+        i = i + 1
+    STOP
+STOP 
