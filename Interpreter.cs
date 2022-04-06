@@ -160,6 +160,7 @@ namespace CFPL_Interpreter_Console
             Interpret();
         }
 
+        #region Lexical Analysis
         void Lex()
         {
             int ctr = 1;
@@ -419,6 +420,7 @@ namespace CFPL_Interpreter_Console
             throw new ErrorException($"Illegal Identifier '{literal}' on line {ctr}.");
         }
 
+        #endregion
         void Interpret()
         {
             List<Token> tks = new List<Token>(tokenList);
@@ -447,6 +449,340 @@ namespace CFPL_Interpreter_Console
             }
         }
 
+        #region delcaration
+        void checkDeclareRework(int index)
+        {
+            int state = 0;
+            int x = index;
+            int pars = 0;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.VAR:
+                        state = DeclareReworkDFA[state, 0];
+                        break;
+                    case Lexeme.IDENTIFIER:
+                        if (state > 4)
+                        {
+                            if (!variables.ContainsKey(tokenList[x].literal))
+                            {
+                                throw new ErrorException($"Use of unassigned variable '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                            }
+                            switch (variables[tokenList[x].literal])
+                            {
+                                case bType.INT:
+                                case bType.FLOAT:
+                                    state = DeclareReworkDFA[state, 1];
+                                    break;
+                                case bType.CHAR:
+                                    state = DeclareReworkDFA[state, 2];
+                                    break;
+                                case bType.BOOL:
+                                    state = DeclareReworkDFA[state, 3];
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            state = DeclareReworkDFA[state, 1];
+                        }
+                        break;
+                    case Lexeme.ASSIGN:
+                        state = DeclareReworkDFA[state, 4];
+                        break;
+                    case Lexeme.NUMBER:
+                        state = DeclareReworkDFA[state, 5];
+                        break;
+                    case Lexeme.CHARACTER:
+                        state = DeclareReworkDFA[state, 6];
+                        break;
+                    case Lexeme.BOOLEAN:
+                        state = DeclareReworkDFA[state, 7];
+                        break;
+                    case Lexeme.LPAR:
+                        pars++;
+                        state = DeclareReworkDFA[state, 8];
+                        break;
+                    case Lexeme.RPAR:
+                        if (pars == 0)
+                        {
+                            throw new ErrorException($"Illegal closing ')' on line {tokenList[x].line}.");
+                        }
+                        pars--;
+                        state = DeclareReworkDFA[state, 9];
+                        break;
+                    case Lexeme.GREATER:
+                    case Lexeme.LESSER:
+                    case Lexeme.EQUAL:
+                    case Lexeme.GEQUAL:
+                    case Lexeme.LEQUAL:
+                    case Lexeme.NEQUAL:
+                        state = DeclareReworkDFA[state, 10];
+                        break;
+                    case Lexeme.AND:
+                    case Lexeme.OR:
+                        state = DeclareReworkDFA[state, 11];
+                        break;
+                    case Lexeme.NOT:
+                        state = DeclareReworkDFA[state, 12];
+                        break;
+                    case Lexeme.AST:
+                    case Lexeme.FSLASH:
+                        state = DeclareReworkDFA[state, 13];
+                        break;
+                    case Lexeme.PLUS:
+                    case Lexeme.MINUS:
+                        state = DeclareReworkDFA[state, 14];
+                        break;
+                    case Lexeme.COMMA:
+                        if (pars != 0)
+                        {
+                            throw new ErrorException($"Unclosed '(' on line {tokenList[x].line}.");
+                        }
+                        state = DeclareReworkDFA[state, 15];
+                        break;
+                    case Lexeme.AS:
+                        state = DeclareReworkDFA[state, 16];
+                        break;
+                    case Lexeme.INT:
+                    case Lexeme.FLOAT:
+                    case Lexeme.CHAR:
+                    case Lexeme.BOOL:
+                        state = DeclareReworkDFA[state, 17];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+                }
+
+                x++;
+            }
+
+
+            if (state != 13)
+                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
+        }
+
+
+        void DeclareRework(int index, ref int y)
+        {
+            int x = index;
+            while (tokenList[x + 1].lex != Lexeme.NEWLINE)
+            {
+                x++;
+            }
+
+            bType t;
+
+            switch (tokenList[x].lex)
+            {
+                case Lexeme.INT:
+                    t = bType.INT;
+                    break;
+                case Lexeme.FLOAT:
+                    t = bType.FLOAT;
+                    break;
+                case Lexeme.BOOL:
+                    t = bType.BOOL;
+                    break;
+                default:
+                    t = bType.CHAR;
+                    break;
+            }
+
+            x = index;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                if (tokenList[x].lex == Lexeme.IDENTIFIER)
+                {
+                    DeclareAssign(x, ref x, t);
+                }
+
+                x++;
+            }
+
+            y = x;
+        }
+
+
+        void DeclareAssign(int index, ref int y, bType t)
+        {
+            int x = index;
+            if (variables.ContainsKey(tokenList[x].literal))
+            {
+                throw new ErrorException($"Variable '{tokenList[x].literal}' has already been declared previously.");
+            }
+
+            variables[tokenList[x].literal] = t;
+
+            if (tokenList[x + 1].lex == Lexeme.AS || tokenList[x + 1].lex == Lexeme.COMMA)
+            {
+                y = x;
+                return;
+            }
+
+            x += 2;
+            switch (tokenList[x + 1].lex)
+            {
+                case Lexeme.ASSIGN:
+                    DeclareAssign(x, ref x, t);
+                    switch (t)
+                    {
+                        case bType.INT:
+                            intVars[tokenList[index].literal] = intVars[tokenList[index + 2].literal];
+                            break;
+                        case bType.FLOAT:
+                            floatVars[tokenList[index].literal] = floatVars[tokenList[index + 2].literal];
+                            break;
+                        case bType.BOOL:
+                            boolVars[tokenList[index].literal] = boolVars[tokenList[index + 2].literal];
+                            break;
+                        case bType.CHAR:
+                            charVars[tokenList[index].literal] = charVars[tokenList[index + 2].literal];
+                            break;
+                    }
+                    break;
+                default:
+                    Object res = Evaluate(x, ref x);
+                    switch (t)
+                    {
+                        case bType.INT:
+                            if (res is not Int32)
+                            {
+                                if (res is Single || res is Decimal || res is Double)
+                                {
+                                    float r = Convert.ToSingle(res);
+                                    if (r % 1 != 0)
+                                        throw new ErrorException($"Cannot assign FLOAT to type INT on line {tokenList[x].line}.");
+
+                                    intVars[tokenList[index].literal] = Convert.ToInt32(r);
+                                }
+                                else
+                                {
+                                    throw new ErrorException($"Cannot assign " + (res is bool ? "BOOL" : "CHAR") + $" to type INT on line {tokenList[x].line}.");
+                                }
+                            }
+
+                            intVars[tokenList[index].literal] = Convert.ToInt32(res);
+
+                            break;
+                        case bType.FLOAT:
+                            if (res is not Int32 && res is not Single && res is not Double && res is not Decimal)
+                                throw new ErrorException($"Cannot assign " + (res is bool ? "BOOL" : "CHAR") + $" to type FLOAT on line {tokenList[x].line}.");
+
+                            floatVars[tokenList[index].literal] = Convert.ToSingle(res);
+
+                            break;
+                        case bType.BOOL:
+                            if (res is not Boolean)
+                                throw new ErrorException($"Cannot assign " + (res is Int32 ? "INT" : res is Single ? "FLOAT" : "CHAR") + $" to type BOOL on line {tokenList[x].line}.");
+
+                            boolVars[tokenList[index].literal] = Convert.ToBoolean(res);
+
+                            break;
+                        case bType.CHAR:
+                            if (res is not String)
+                                throw new ErrorException($"Cannot assign " + (res is Int32 ? "INT" : res is Single ? "FLOAT" : "BOOL") + $" to type CHAR on line {tokenList[x].line}.");
+
+                            charVars[tokenList[index].literal] = res.ToString()[0];
+
+                            break;
+                    }
+                    break;
+            }
+
+            y = x;
+        }
+
+        #endregion
+
+        #region Body
+
+        int checkStructure(int index)
+        {
+            int state = 0;
+            int x = index;
+            int pars = 0;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.WHILE:
+                    case Lexeme.IF:
+                        state = structureDFA[state, 0];
+                        break;
+                    case Lexeme.LPAR:
+                        pars++;
+                        state = structureDFA[state, 1];
+                        break;
+                    case Lexeme.RPAR:
+                        if (--pars < 0)
+                        {
+                            throw new ErrorException($"Illegal ')' on line {tokenList[x].line}.");
+                        }
+                        state = structureDFA[state, 2];
+                        break;
+                    case Lexeme.IDENTIFIER:
+                    case Lexeme.NUMBER:
+                    case Lexeme.CHARACTER:
+                    case Lexeme.STRING:
+                        state = structureDFA[state, 3];
+                        break;
+                    case Lexeme.BOOLEAN:
+                        state = structureDFA[state, 4];
+                        break;
+                    case Lexeme.AST:
+                    case Lexeme.FSLASH:
+                    case Lexeme.PLUS:
+                    case Lexeme.MINUS:
+                    case Lexeme.PERCENT:
+                        state = structureDFA[state, 5];
+                        break;
+                    case Lexeme.AND:
+                    case Lexeme.OR:
+                        state = structureDFA[state, 6];
+                        break;
+                    case Lexeme.GREATER:
+                    case Lexeme.LESSER:
+                    case Lexeme.EQUAL:
+                    case Lexeme.GEQUAL:
+                    case Lexeme.LEQUAL:
+                    case Lexeme.NEQUAL:
+                        state = structureDFA[state, 7];
+                        break;
+                    case Lexeme.NOT:
+                        state = structureDFA[state, 8];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+                }
+
+                x++;
+            }
+
+            if (pars != 0)
+                throw new ErrorException($"Unclosed '(' on line {tokenList[x].line}.");
+
+            if (state != 3 && state != 5)
+                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
+
+            return x;
+        }
         void executeBody(int index, ref int y, bool skip)
         {
             int x = index;
@@ -595,257 +931,9 @@ namespace CFPL_Interpreter_Console
 
             y = x + 1;
         }
+        #endregion
 
-        void DeclareRework(int index, ref int y)
-        {
-            int x = index;
-            while (tokenList[x + 1].lex != Lexeme.NEWLINE)
-            {
-                x++;
-            }
-
-            bType t;
-
-            switch (tokenList[x].lex)
-            {
-                case Lexeme.INT:
-                    t = bType.INT;
-                    break;
-                case Lexeme.FLOAT:
-                    t = bType.FLOAT;
-                    break;
-                case Lexeme.BOOL:
-                    t = bType.BOOL;
-                    break;
-                default:
-                    t = bType.CHAR;
-                    break;
-            }
-
-            x = index;
-
-            while (tokenList[x].lex != Lexeme.NEWLINE)
-            {
-                if (tokenList[x].lex == Lexeme.IDENTIFIER)
-                {
-                    DeclareAssign(x, ref x, t);
-                }
-
-                x++;
-            }
-
-            y = x;
-        }
-
-        void checkDeclareRework(int index)
-        {
-            int state = 0;
-            int x = index;
-            int pars = 0;
-
-            while (tokenList[x].lex != Lexeme.NEWLINE)
-            {
-                switch (tokenList[x].lex)
-                {
-                    case Lexeme.VAR:
-                        state = DeclareReworkDFA[state, 0];
-                        break;
-                    case Lexeme.IDENTIFIER:
-                        if (state > 4)
-                        {
-                            if (!variables.ContainsKey(tokenList[x].literal))
-                            {
-                                throw new ErrorException($"Use of unassigned variable '{tokenList[x].literal}' on line {tokenList[x].line}.");
-                            }
-                            switch (variables[tokenList[x].literal])
-                            {
-                                case bType.INT:
-                                case bType.FLOAT:
-                                    state = DeclareReworkDFA[state, 1];
-                                    break;
-                                case bType.CHAR:
-                                    state = DeclareReworkDFA[state, 2];
-                                    break;
-                                case bType.BOOL:
-                                    state = DeclareReworkDFA[state, 3];
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            state = DeclareReworkDFA[state, 1];
-                        }
-                        break;
-                    case Lexeme.ASSIGN:
-                        state = DeclareReworkDFA[state, 4];
-                        break;
-                    case Lexeme.NUMBER:
-                        state = DeclareReworkDFA[state, 5];
-                        break;
-                    case Lexeme.CHARACTER:
-                        state = DeclareReworkDFA[state, 6];
-                        break;
-                    case Lexeme.BOOLEAN:
-                        state = DeclareReworkDFA[state, 7];
-                        break;
-                    case Lexeme.LPAR:
-                        pars++;
-                        state = DeclareReworkDFA[state, 8];
-                        break;
-                    case Lexeme.RPAR:
-                        if (pars == 0)
-                        {
-                            throw new ErrorException($"Illegal closing ')' on line {tokenList[x].line}.");
-                        }
-                        pars--;
-                        state = DeclareReworkDFA[state, 9];
-                        break;
-                    case Lexeme.GREATER:
-                    case Lexeme.LESSER:
-                    case Lexeme.EQUAL:
-                    case Lexeme.GEQUAL:
-                    case Lexeme.LEQUAL:
-                    case Lexeme.NEQUAL:
-                        state = DeclareReworkDFA[state, 10];
-                        break;
-                    case Lexeme.AND:
-                    case Lexeme.OR:
-                        state = DeclareReworkDFA[state, 11];
-                        break;
-                    case Lexeme.NOT:
-                        state = DeclareReworkDFA[state, 12];
-                        break;
-                    case Lexeme.AST:
-                    case Lexeme.FSLASH:
-                        state = DeclareReworkDFA[state, 13];
-                        break;
-                    case Lexeme.PLUS:
-                    case Lexeme.MINUS:
-                        state = DeclareReworkDFA[state, 14];
-                        break;
-                    case Lexeme.COMMA:
-                        if (pars != 0)
-                        {
-                            throw new ErrorException($"Unclosed '(' on line {tokenList[x].line}.");
-                        }
-                        state = DeclareReworkDFA[state, 15];
-                        break;
-                    case Lexeme.AS:
-                        state = DeclareReworkDFA[state, 16];
-                        break;
-                    case Lexeme.INT:
-                    case Lexeme.FLOAT:
-                    case Lexeme.CHAR:
-                    case Lexeme.BOOL:
-                        state = DeclareReworkDFA[state, 17];
-                        break;
-                    default:
-                        state = -1;
-                        break;
-                }
-
-                if (state == -1)
-                {
-                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
-                }
-
-                x++;
-            }
-
-
-            if (state != 13)
-                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
-        }
-
-        void DeclareAssign(int index, ref int y, bType t)
-        {
-            int x = index;
-            if (variables.ContainsKey(tokenList[x].literal))
-            {
-                throw new ErrorException($"Variable '{tokenList[x].literal}' has already been declared previously.");
-            }
-
-            variables[tokenList[x].literal] = t;
-
-            if (tokenList[x + 1].lex == Lexeme.AS || tokenList[x + 1].lex == Lexeme.COMMA)
-            {
-                y = x;
-                return;
-            }
-
-            x += 2;
-            switch (tokenList[x + 1].lex)
-            {
-                case Lexeme.ASSIGN:
-                    DeclareAssign(x, ref x, t);
-                    switch (t)
-                    {
-                        case bType.INT:
-                            intVars[tokenList[index].literal] = intVars[tokenList[index + 2].literal];
-                            break;
-                        case bType.FLOAT:
-                            floatVars[tokenList[index].literal] = floatVars[tokenList[index + 2].literal];
-                            break;
-                        case bType.BOOL:
-                            boolVars[tokenList[index].literal] = boolVars[tokenList[index + 2].literal];
-                            break;
-                        case bType.CHAR:
-                            charVars[tokenList[index].literal] = charVars[tokenList[index + 2].literal];
-                            break;
-                    }
-                    break;
-                default:
-                    Object res = Evaluate(x, ref x);
-                    switch (t)
-                    {
-                        case bType.INT:
-                            if (res is not Int32)
-                            {
-                                if (res is Single || res is Decimal || res is Double)
-                                {
-                                    float r = Convert.ToSingle(res);
-                                    if (r % 1 != 0)
-                                        throw new ErrorException($"Cannot assign FLOAT to type INT on line {tokenList[x].line}.");
-
-                                    intVars[tokenList[index].literal] = Convert.ToInt32(r);
-                                }
-                                else
-                                {
-                                    throw new ErrorException($"Cannot assign " + (res is bool ? "BOOL" : "CHAR") + $" to type INT on line {tokenList[x].line}.");
-                                }
-                            }
-
-                            intVars[tokenList[index].literal] = Convert.ToInt32(res);
-
-                            break;
-                        case bType.FLOAT:
-                            if (res is not Int32 && res is not Single && res is not Double && res is not Decimal)
-                                throw new ErrorException($"Cannot assign " + (res is bool ? "BOOL" : "CHAR") + $" to type FLOAT on line {tokenList[x].line}.");
-
-                            floatVars[tokenList[index].literal] = Convert.ToSingle(res);
-
-                            break;
-                        case bType.BOOL:
-                            if (res is not Boolean)
-                                throw new ErrorException($"Cannot assign " + (res is Int32 ? "INT" : res is Single ? "FLOAT" : "CHAR") + $" to type BOOL on line {tokenList[x].line}.");
-
-                            boolVars[tokenList[index].literal] = Convert.ToBoolean(res);
-
-                            break;
-                        case bType.CHAR:
-                            if (res is not String)
-                                throw new ErrorException($"Cannot assign " + (res is Int32 ? "INT" : res is Single ? "FLOAT" : "BOOL") + $" to type CHAR on line {tokenList[x].line}.");
-
-                            charVars[tokenList[index].literal] = res.ToString()[0];
-
-                            break;
-                    }
-                    break;
-            }
-
-            y = x;
-        }
-
+        #region Evaluation
         Object Evaluate(int index, ref int y)
         {
             int x = index;
@@ -1002,6 +1090,182 @@ namespace CFPL_Interpreter_Console
             return sb.ToString();
         }
 
+        bool evaluateBool(int index, ref int y)
+        {
+            bool res;
+            int x = index;
+
+            List<string> eval = new List<string>();
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.IDENTIFIER:
+                        try
+                        {
+                            switch (variables[tokenList[x].literal])
+                            {
+                                case bType.INT:
+                                    eval.Add(intVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.FLOAT:
+                                    eval.Add(floatVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.CHAR:
+                                    eval.Add(charVars[tokenList[x].literal].ToString());
+                                    break;
+                                case bType.BOOL:
+                                    eval.Add(boolVars[tokenList[x].literal].ToString());
+                                    break;
+                                default:
+                                    throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                            }
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            throw new ErrorException($"Use of unassigned variable '{tokenList[x].literal}' on line {tokenList[x].line}.");
+                        }
+                        break;
+                    case Lexeme.NUMBER:
+                        eval.Add(tokenList[x].literal);
+                        break;
+                    case Lexeme.CHARACTER:
+                        eval.Add($"'{tokenList[x].literal}'");
+                        break;
+                    case Lexeme.BOOLEAN:
+                        eval.Add($"{tokenList[x].literal}");
+                        break;
+                    case Lexeme.LPAR:
+                        eval.Add("(");
+                        break;
+                    case Lexeme.RPAR:
+                        eval.Add(")");
+                        break;
+                    case Lexeme.AST:
+                        eval.Add("*");
+                        break;
+                    case Lexeme.FSLASH:
+                        eval.Add("/");
+                        break;
+                    case Lexeme.PLUS:
+                        eval.Add("+");
+                        break;
+                    case Lexeme.MINUS:
+                        eval.Add("-");
+                        break;
+                    case Lexeme.PERCENT:
+                        eval.Add("%");
+                        break;
+                    case Lexeme.GREATER:
+                        eval.Add(">");
+                        break;
+                    case Lexeme.LESSER:
+                        eval.Add("<");
+                        break;
+                    case Lexeme.EQUAL:
+                        eval.Add("=");
+                        break;
+                    case Lexeme.GEQUAL:
+                        eval.Add(">=");
+                        break;
+                    case Lexeme.LEQUAL:
+                        eval.Add("<=");
+                        break;
+                    case Lexeme.NEQUAL:
+                        eval.Add("<>");
+                        break;
+                    case Lexeme.NOT:
+                        eval.Add("NOT");
+                        break;
+                    case Lexeme.AND:
+                        eval.Add("AND");
+                        break;
+                    case Lexeme.OR:
+                        eval.Add("OR");
+                        break;
+                    default:
+                        throw new ErrorException($"Illegal '{tokenList[x].lex}' on line {tokenList[x].line}.");
+                }
+                x++;
+            }
+
+            y = x;
+
+            DataTable dt = new DataTable();
+
+            res = (bool)dt.Compute(String.Join(' ', eval), "");
+
+            return res;
+        }
+
+        #endregion
+
+        #region Number 
+        int checkAssignToNum(int index)
+        {
+            int state = 0;
+            int x = index;
+            int pars = 0;
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.IDENTIFIER:
+                        state = checkNumAssDFA[state, 0];
+                        break;
+                    case Lexeme.ASSIGN:
+                        state = checkNumAssDFA[state, 1];
+                        break;
+                    case Lexeme.NUMBER:
+                        state = checkNumAssDFA[state, 2];
+                        break;
+                    case Lexeme.LPAR:
+                        pars++;
+                        state = checkNumAssDFA[state, 3];
+                        break;
+                    case Lexeme.RPAR:
+                        if (--pars < 0)
+                        {
+                            throw new ErrorException($"Illegal ')' on line {tokenList[x].line}.");
+                        }
+                        state = checkNumAssDFA[state, 4];
+                        break;
+                    case Lexeme.UAST:
+                    case Lexeme.UFSLASH:
+                    case Lexeme.UPLUS:
+                    case Lexeme.UMINUS:
+                    case Lexeme.UPERCENT:
+                        state = checkNumAssDFA[state, 5];
+                        break;
+                    case Lexeme.AST:
+                    case Lexeme.FSLASH:
+                    case Lexeme.PERCENT:
+                        state = checkNumAssDFA[state, 6];
+                        break;
+                    case Lexeme.PLUS:
+                    case Lexeme.MINUS:
+                        state = checkNumAssDFA[state, 7];
+                        break;
+                    default:
+                        state = -1;
+                        break;
+                }
+
+                if (state == -1)
+                {
+                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+                }
+
+                x++;
+            }
+
+            if (state != 3 && state != 5)
+                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
+
+            return x;
+        }
         float assignToNum(int index, ref int y)
         {
             int x = index;
@@ -1145,107 +1409,9 @@ namespace CFPL_Interpreter_Console
 
             return res;
         }
+        #endregion
 
-        int checkAssignToNum(int index)
-        {
-            int state = 0;
-            int x = index;
-            int pars = 0;
-
-            while (tokenList[x].lex != Lexeme.NEWLINE)
-            {
-                switch (tokenList[x].lex)
-                {
-                    case Lexeme.IDENTIFIER:
-                        state = checkNumAssDFA[state, 0];
-                        break;
-                    case Lexeme.ASSIGN:
-                        state = checkNumAssDFA[state, 1];
-                        break;
-                    case Lexeme.NUMBER:
-                        state = checkNumAssDFA[state, 2];
-                        break;
-                    case Lexeme.LPAR:
-                        pars++;
-                        state = checkNumAssDFA[state, 3];
-                        break;
-                    case Lexeme.RPAR:
-                        if (--pars < 0)
-                        {
-                            throw new ErrorException($"Illegal ')' on line {tokenList[x].line}.");
-                        }
-                        state = checkNumAssDFA[state, 4];
-                        break;
-                    case Lexeme.UAST:
-                    case Lexeme.UFSLASH:
-                    case Lexeme.UPLUS:
-                    case Lexeme.UMINUS:
-                    case Lexeme.UPERCENT:
-                        state = checkNumAssDFA[state, 5];
-                        break;
-                    case Lexeme.AST:
-                    case Lexeme.FSLASH:
-                    case Lexeme.PERCENT:
-                        state = checkNumAssDFA[state, 6];
-                        break;
-                    case Lexeme.PLUS:
-                    case Lexeme.MINUS:
-                        state = checkNumAssDFA[state, 7];
-                        break;
-                    default:
-                        state = -1;
-                        break;
-                }
-
-                if (state == -1)
-                {
-                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
-                }
-
-                x++;
-            }
-
-            if (state != 3 && state != 5)
-                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
-
-            return x;
-        }
-
-        char assignToChar(int index, ref int y)
-        {
-            int x = index;
-            char res;
-
-            x += 2;
-
-            if (tokenList[x + 1].lex == Lexeme.ASSIGN)
-            {
-                if (tokenList[x].lex == Lexeme.IDENTIFIER)
-                {
-                    res = assignToChar(x, ref x);
-                    charVars[tokenList[index].literal] = res;
-
-                    y = x;
-
-                    return res;
-                }
-            }
-
-            if (tokenList[x].lex == Lexeme.IDENTIFIER)
-            {
-                res = charVars[tokenList[x].literal];
-            }
-            else
-            {
-                res = tokenList[x].literal[0];
-            }
-
-            y = x;
-
-            charVars[tokenList[index].literal] = res;
-
-            return res;
-        }
+        #region Character
 
         int checkAssignToChar(int index)
         {
@@ -1283,11 +1449,10 @@ namespace CFPL_Interpreter_Console
 
             return x;
         }
-
-        bool assignToBool(int index, ref int y)
+        char assignToChar(int index, ref int y)
         {
             int x = index;
-            bool res;
+            char res;
 
             x += 2;
 
@@ -1295,9 +1460,8 @@ namespace CFPL_Interpreter_Console
             {
                 if (tokenList[x].lex == Lexeme.IDENTIFIER)
                 {
-                    res = assignToBool(x, ref x);
-
-                    boolVars[tokenList[index].literal] = res;
+                    res = assignToChar(x, ref x);
+                    charVars[tokenList[index].literal] = res;
 
                     y = x;
 
@@ -1305,122 +1469,27 @@ namespace CFPL_Interpreter_Console
                 }
             }
 
-            boolVars[tokenList[index].literal] = evaluateBool(x, ref x);
-
-            y = x;
-
-            return true;
-        }
-
-        bool evaluateBool(int index, ref int y)
-        {
-            bool res;
-            int x = index;
-
-            List<string> eval = new List<string>();
-
-            while (tokenList[x].lex != Lexeme.NEWLINE)
+            if (tokenList[x].lex == Lexeme.IDENTIFIER)
             {
-                switch (tokenList[x].lex)
-                {
-                    case Lexeme.IDENTIFIER:
-                        try
-                        {
-                            switch (variables[tokenList[x].literal])
-                            {
-                                case bType.INT:
-                                    eval.Add(intVars[tokenList[x].literal].ToString());
-                                    break;
-                                case bType.FLOAT:
-                                    eval.Add(floatVars[tokenList[x].literal].ToString());
-                                    break;
-                                case bType.CHAR:
-                                    eval.Add(charVars[tokenList[x].literal].ToString());
-                                    break;
-                                case bType.BOOL:
-                                    eval.Add(boolVars[tokenList[x].literal].ToString());
-                                    break;
-                                default:
-                                    throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
-                            }
-                        }
-                        catch (KeyNotFoundException)
-                        {
-                            throw new ErrorException($"Use of unassigned variable '{tokenList[x].literal}' on line {tokenList[x].line}.");
-                        }
-                        break;
-                    case Lexeme.NUMBER:
-                        eval.Add(tokenList[x].literal);
-                        break;
-                    case Lexeme.CHARACTER:
-                        eval.Add($"'{tokenList[x].literal}'");
-                        break;
-                    case Lexeme.BOOLEAN:
-                        eval.Add($"{tokenList[x].literal}");
-                        break;
-                    case Lexeme.LPAR:
-                        eval.Add("(");
-                        break;
-                    case Lexeme.RPAR:
-                        eval.Add(")");
-                        break;
-                    case Lexeme.AST:
-                        eval.Add("*");
-                        break;
-                    case Lexeme.FSLASH:
-                        eval.Add("/");
-                        break;
-                    case Lexeme.PLUS:
-                        eval.Add("+");
-                        break;
-                    case Lexeme.MINUS:
-                        eval.Add("-");
-                        break;
-                    case Lexeme.PERCENT:
-                        eval.Add("%");
-                        break;
-                    case Lexeme.GREATER:
-                        eval.Add(">");
-                        break;
-                    case Lexeme.LESSER:
-                        eval.Add("<");
-                        break;
-                    case Lexeme.EQUAL:
-                        eval.Add("=");
-                        break;
-                    case Lexeme.GEQUAL:
-                        eval.Add(">=");
-                        break;
-                    case Lexeme.LEQUAL:
-                        eval.Add("<=");
-                        break;
-                    case Lexeme.NEQUAL:
-                        eval.Add("<>");
-                        break;
-                    case Lexeme.NOT:
-                        eval.Add("NOT");
-                        break;
-                    case Lexeme.AND:
-                        eval.Add("AND");
-                        break;
-                    case Lexeme.OR:
-                        eval.Add("OR");
-                        break;
-                    default:
-                        throw new ErrorException($"Illegal '{tokenList[x].lex}' on line {tokenList[x].line}.");
-                }
-                x++;
+                res = charVars[tokenList[x].literal];
+            }
+            else
+            {
+                res = tokenList[x].literal[0];
             }
 
             y = x;
 
-            DataTable dt = new DataTable();
-
-            res = (bool)dt.Compute(String.Join(' ', eval), "");
+            charVars[tokenList[index].literal] = res;
 
             return res;
         }
 
+
+
+        #endregion
+
+        #region Boolean
         int checkAssignToBool(int index)
         {
             int state = 0;
@@ -1500,112 +1569,37 @@ namespace CFPL_Interpreter_Console
             return x;
         }
 
-        int checkStructure(int index)
+        bool assignToBool(int index, ref int y)
         {
-            int state = 0;
             int x = index;
-            int pars = 0;
+            bool res;
 
-            while (tokenList[x].lex != Lexeme.NEWLINE)
+            x += 2;
+
+            if (tokenList[x + 1].lex == Lexeme.ASSIGN)
             {
-                switch (tokenList[x].lex)
+                if (tokenList[x].lex == Lexeme.IDENTIFIER)
                 {
-                    case Lexeme.WHILE:
-                    case Lexeme.IF:
-                        state = structureDFA[state, 0];
-                        break;
-                    case Lexeme.LPAR:
-                        pars++;
-                        state = structureDFA[state, 1];
-                        break;
-                    case Lexeme.RPAR:
-                        if (--pars < 0)
-                        {
-                            throw new ErrorException($"Illegal ')' on line {tokenList[x].line}.");
-                        }
-                        state = structureDFA[state, 2];
-                        break;
-                    case Lexeme.IDENTIFIER:
-                    case Lexeme.NUMBER:
-                    case Lexeme.CHARACTER:
-                    case Lexeme.STRING:
-                        state = structureDFA[state, 3];
-                        break;
-                    case Lexeme.BOOLEAN:
-                        state = structureDFA[state, 4];
-                        break;
-                    case Lexeme.AST:
-                    case Lexeme.FSLASH:
-                    case Lexeme.PLUS:
-                    case Lexeme.MINUS:
-                    case Lexeme.PERCENT:
-                        state = structureDFA[state, 5];
-                        break;
-                    case Lexeme.AND:
-                    case Lexeme.OR:
-                        state = structureDFA[state, 6];
-                        break;
-                    case Lexeme.GREATER:
-                    case Lexeme.LESSER:
-                    case Lexeme.EQUAL:
-                    case Lexeme.GEQUAL:
-                    case Lexeme.LEQUAL:
-                    case Lexeme.NEQUAL:
-                        state = structureDFA[state, 7];
-                        break;
-                    case Lexeme.NOT:
-                        state = structureDFA[state, 8];
-                        break;
-                    default:
-                        state = -1;
-                        break;
-                }
+                    res = assignToBool(x, ref x);
 
-                if (state == -1)
-                {
-                    throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
-                }
+                    boolVars[tokenList[index].literal] = res;
 
-                x++;
+                    y = x;
+
+                    return res;
+                }
             }
 
-            if (pars != 0)
-                throw new ErrorException($"Unclosed '(' on line {tokenList[x].line}.");
-
-            if (state != 3 && state != 5)
-                throw new ErrorException($"Invalid assignment on line {tokenList[x].line}.");
-
-            return x;
-        }
-
-        void OutputRework(int index, ref int y)
-        {
-            int x = index + 2;
-
-            StringBuilder sb = new StringBuilder();
-
-            while (tokenList[x].lex != Lexeme.NEWLINE)
-            {
-                switch (tokenList[x].lex)
-                {
-                    case Lexeme.STRING:
-                        sb.Append(tokenList[x].literal.Replace("$DQUOTE$", "\"").Replace("$LBRACKET$", "[").Replace("$RBRACKET$", "]").Replace("$AMP$", "&").Replace("#", "\n").Replace("$SHARP$", "#"));
-                        break;
-                    case Lexeme.AMP:
-                        break;
-                    default:
-                        Object res = Evaluate(x, ref x);
-                        sb.Append(res is not bool ? res : Convert.ToBoolean(res) ? "\"TRUE\"" : "\"FALSE\"");
-                        break;
-                }
-
-                x++;
-            }
+            boolVars[tokenList[index].literal] = evaluateBool(x, ref x);
 
             y = x;
 
-            Console.Write(sb.ToString());
+            return true;
         }
+
+        #endregion
+
+        #region Output
 
         int checkOutputRework(int index)
         {
@@ -1709,6 +1703,41 @@ namespace CFPL_Interpreter_Console
             return x;
         }
 
+
+
+        void OutputRework(int index, ref int y)
+        {
+            int x = index + 2;
+
+            StringBuilder sb = new StringBuilder();
+
+            while (tokenList[x].lex != Lexeme.NEWLINE)
+            {
+                switch (tokenList[x].lex)
+                {
+                    case Lexeme.STRING:
+                        sb.Append(tokenList[x].literal.Replace("$DQUOTE$", "\"").Replace("$LBRACKET$", "[").Replace("$RBRACKET$", "]").Replace("$AMP$", "&").Replace("#", "\n").Replace("$SHARP$", "#"));
+                        break;
+                    case Lexeme.AMP:
+                        break;
+                    default:
+                        Object res = Evaluate(x, ref x);
+                        sb.Append(res is not bool ? res : Convert.ToBoolean(res) ? "\"TRUE\"" : "\"FALSE\"");
+                        break;
+                }
+
+                x++;
+            }
+
+            y = x;
+
+            Console.Write(sb.ToString());
+        }
+
+
+        #endregion
+
+        #region Input
         void checkInput(int index)
         {
             int state = 0;
@@ -1807,6 +1836,7 @@ namespace CFPL_Interpreter_Console
             y = x;
         }
 
+        #endregion
 
         #region Commented
         // int[,] DeclareDFA = new int[7, 7]{
