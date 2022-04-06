@@ -430,8 +430,8 @@ namespace CFPL_Interpreter_Console
 						}
 						x++;
 						executeBody(x, ref x, false);
-						break;
-					case Lexeme.NEWLINE:
+						if(x < tks.Count-1)
+							throw new ErrorException($"Unreachable code on line {tks[x].line}.");
 						break;
 					default:
 						throw new ErrorException($"Illegal '{tks[x].lex}' on line {tks[x].line}.");
