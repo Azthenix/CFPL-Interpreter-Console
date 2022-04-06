@@ -106,7 +106,7 @@ namespace CFPL_Interpreter_Console
 
 		const string symbols = "()[]*/+-%&><>=,#:\"\'";
 		List<string> symbolsArray = new List<string> { "(", ")", "[", "]", "*", "/", "+", "-", "%", "&", ">", "<", "==", ">=", "<=", "=", "," };
-		List<string> reserved = new List<string>{"INT", "CHAR", "BOOL", "FLOAT", "AND", "OR", "NOT", "WHILE", "IF", "ELSE", "TRUE", "FALSE",
+		List<string> reserved = new List<string>{"INT", "CHAR", "BOOL", "FLOAT", "AND", "OR", "NOT", "WHILE", "IF", "ELSE",
 										"VAR", "AS", "START", "STOP", "OUTPUT", "INPUT"};
 
 
@@ -122,8 +122,8 @@ namespace CFPL_Interpreter_Console
 			tokenList = new List<Token>();
 
 			lines = File.ReadAllText(file)
-			.Replace("\"TRUE\"", "TRUE")
-			.Replace("\"FALSE\"", "FALSE")
+			.Replace("\"TRUE\"", "$TRUE$")
+			.Replace("\"FALSE\"", "$FALSE$")
 			.Replace("[\"]", "$DQUOTE$")
 			.Replace("[&]", "$AMP$")
 			.Replace("\r", "")
@@ -376,14 +376,13 @@ namespace CFPL_Interpreter_Console
 		{
 			if (reserved.Contains(literal))
 			{
-				if (literal == "TRUE" || literal == "FALSE")
-				{
-					tokenList.Add(new Token(Lexeme.BOOLEAN, literal, ctr));
-				}
-				else
-				{
-					tokenList.Add(new Token(Enum.Parse<Lexeme>(literal), null, ctr));
-				}
+				tokenList.Add(new Token(Enum.Parse<Lexeme>(literal), null, ctr));
+				return;
+			}
+			if (literal == "$TRUE$" || literal == "$FALSE$")
+			{
+				tokenList.Add(new Token(Lexeme.BOOLEAN, literal, ctr));
+
 				return;
 			}
 			if (Char.IsDigit(literal[0]))
