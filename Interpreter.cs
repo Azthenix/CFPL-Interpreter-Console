@@ -1442,13 +1442,13 @@ namespace CFPL_Interpreter_Console
 					case Lexeme.IDENTIFIER:
 						try
 						{
-							switch (((local?.variables.ContainsKey(tokenList[index].literal) ?? false) ? local.variables[tokenList[index].literal] : variables[tokenList[index].literal]))
+							switch (((local?.variables.ContainsKey(tokenList[x].literal) ?? false) ? local.variables[tokenList[x].literal] : variables[tokenList[x].literal]))
 							{
 								case bType.INT:
-									sb.Append((local?.intVars.ContainsKey(tokenList[index].literal) ?? false) ? local.intVars[tokenList[index].literal].ToString() : intVars[tokenList[x].literal].ToString());
+									sb.Append((local?.intVars.ContainsKey(tokenList[x].literal) ?? false) ? local.intVars[tokenList[x].literal].ToString() : intVars[tokenList[x].literal].ToString());
 									break;
 								case bType.FLOAT:
-									sb.Append((local?.floatVars.ContainsKey(tokenList[index].literal) ?? false) ? local.floatVars[tokenList[index].literal].ToString() : floatVars[tokenList[x].literal].ToString());
+									sb.Append((local?.floatVars.ContainsKey(tokenList[x].literal) ?? false) ? local.floatVars[tokenList[x].literal].ToString() : floatVars[tokenList[x].literal].ToString());
 									break;
 								default:
 									throw new ErrorException($"Illegal IDENTIFIER '{tokenList[x].literal}' on line {tokenList[x].line}.");
