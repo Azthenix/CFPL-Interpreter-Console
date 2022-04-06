@@ -9,18 +9,9 @@ namespace CFPL_Interpreter_Console
 {
     class Interpreter
     {
-        List<Token> tokenList;
 
-        int[,] DeclareDFA = new int[7, 7]{
-            {1, -1, -1, -1, -1, -1, -1},
-            {-1, 2, -1, -1, -1, -1, -1},
-            {-1, -1, 3, 1, -1, 5, -1},
-            {-1, 4, -1, -1, 4, -1, -1},
-            {-1, -1, -1, 1, -1, 5, -1},
-            {-1, -1, -1, -1, -1, -1, 6},
-            {-1, -1, -1, -1, -1, -1, -1}
-        };
 
+        #region DFA
         int[,] DeclareReworkDFA = new int[15, 18]{
 //			var	numid	charid	boolid	ass	num	char	bool	lpar	rpar	check	andor	not	muldiv	addsub	comma	AS	TYPE
 	/* 0 */	{1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},	// 0
@@ -57,100 +48,6 @@ namespace CFPL_Interpreter_Console
 		};
 
 
-        // int[,] numberDeclare = new int[9, 10]{
-        // // VAR iden = u/lpar const op AS TYPE , rpar
-        //     {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
-        //     {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
-        //     {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
-        //     {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
-        //     {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
-        //     {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
-        //     {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
-        //     {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
-        //     {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
-        // };
-
-        // int[,] boolDeclare = new int[7, 7]
-        // { // VAR  iden =   bool  ,  AS BOOL
-        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
-        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
-        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
-        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
-        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
-        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
-        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
-        // };
-
-        // int[,] charDeclare = new int[7, 7]
-        // { // VAR  iden =   char  ,  AS BOOL
-        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
-        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
-        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
-        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
-        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
-        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
-        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
-        // };
-
-        //  void checkCharDeclare(int index)
-        // {
-        //     int state = 0;
-        //     int x = index;
-
-        //     while (tokenList[x].lex != Lexeme.NEWLINE)
-        //     {
-        //         switch (tokenList[x].lex)
-        //         {
-        //             case Lexeme.VAR:
-        //                 state = DeclareDFA[state, 0];
-        //                 break;
-        //             case Lexeme.IDENTIFIER:
-        //                 state = DeclareDFA[state, 1];
-        //                 break;
-        //             case Lexeme.ASSIGN:
-        //                 state = DeclareDFA[state, 2];
-        //                 break;
-        //             case Lexeme.BOOLEAN:
-        //                 state = charDeclare[state, 4];
-        //                 break;
-        //             case Lexeme.COMMA:
-        //                 state = DeclareDFA[state, 6];
-        //                 break;
-        //             case Lexeme.STRING:
-        //             case Lexeme.NUMBER:
-        //             case Lexeme.CHARACTER:
-        //             case Lexeme.BOOLEAN:
-        //                 state = DeclareDFA[state, 4];
-        //                 break;
-        //             case Lexeme.AS:
-        //                 state = DeclareDFA[state, 5];
-        //                 break;
-        //             case Lexeme.INT:
-        //             case Lexeme.FLOAT:
-        //             case Lexeme.CHAR:
-        //             case Lexeme.BOOL:
-        //                 state = DeclareDFA[state, 6];
-        //                 break;
-        //             default:
-        //                 state = -1;
-        //                 break;
-        //         }
-
-        //         if (state == -1)
-        //         {
-        //             throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
-        //         }
-
-        //         x++;
-        //     }
-        // }
-
-        int[,] outputDFA = new int[4, 4]{
-            {1, -1, -1, -1},
-            {-1, 2, -1, -1},
-            {-1, -1, 3, -1},
-            {-1, -1, -1, 2}
-        };
 
         int[,] checkNumAssDFA = new int[6, 8]{
             {1, -1, -1, -1, -1, -1, -1, -1},
@@ -199,7 +96,7 @@ namespace CFPL_Interpreter_Console
             {-1, 6, -1, 3, -1, -1, -1, -1, -1},
             {-1, 7, -1, 3, 5, -1, -1, -1, 7},
         };
-
+        #endregion
 
         enum bType
         {
@@ -209,6 +106,8 @@ namespace CFPL_Interpreter_Console
             BOOL
         };
 
+        List<Token> tokenList;
+        string[] lines;
         Dictionary<string, bType> variables;
         Dictionary<string, int> intVars;
         Dictionary<string, char> charVars;
@@ -220,7 +119,7 @@ namespace CFPL_Interpreter_Console
         List<string> reserved = new List<string>{"INT", "CHAR", "BOOL", "FLOAT", "AND", "OR", "NOT", "WHILE", "IF", "ELSE", "TRUE", "FALSE",
                                         "VAR", "AS", "START", "STOP", "OUTPUT", "INPUT"};
 
-        string[] lines;
+
 
         public Interpreter(string file)
         {
@@ -257,11 +156,11 @@ namespace CFPL_Interpreter_Console
 
         public void Run()
         {
-            Parse();
+            Lex();
             Interpret();
         }
 
-        void Parse()
+        void Lex()
         {
             int ctr = 1;
             foreach (string line in lines)
@@ -1907,5 +1806,114 @@ namespace CFPL_Interpreter_Console
 
             y = x;
         }
+
+
+        #region Commented
+        // int[,] DeclareDFA = new int[7, 7]{
+        //     {1, -1, -1, -1, -1, -1, -1},
+        //     {-1, 2, -1, -1, -1, -1, -1},
+        //     {-1, -1, 3, 1, -1, 5, -1},
+        //     {-1, 4, -1, -1, 4, -1, -1},
+        //     {-1, -1, -1, 1, -1, 5, -1},
+        //     {-1, -1, -1, -1, -1, -1, 6},
+        //     {-1, -1, -1, -1, -1, -1, -1}
+        // };
+
+        // int[,] numberDeclare = new int[9, 10]{
+        // // VAR iden = u/lpar const op AS TYPE , rpar
+        //     {1, -1, -1, -1,  -1,  -1, -1, -1, -1, -1}, //0 
+        //     {-1, 2, -1, -1,  -1,  -1, -1, -1, -1, -1}, //1
+        //     {-1,-1,  3, -1,  -1,  -1, -1, -1,  1, -1}, //2
+        //     {-1, 4, -1,  5,  -1,  -1, -1, -1, -1, -1}, //3
+        //     {-1,-1, -1, -1,  -1,   5, -1, -1, -1, -1}, //4
+        //     {-1, 6, -1,  5,   6,  -1, -1, -1, -1, -1}, //5
+        //     {-1,-1, -1, -1,  -1,  -1, -1, -1,  1,  6}, //6
+        //     {-1,-1, -1, -1,  -1,  -1,  8, -1, -1, -1}, //7 
+        //     {-1,-1, -1, -1,  -1,  -1, -1, -1, -1, -1}  //8
+        // };
+
+        // int[,] boolDeclare = new int[7, 7]
+        // { // VAR  iden =   bool  ,  AS BOOL
+        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
+        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
+        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
+        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
+        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
+        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
+        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
+        // };
+
+        // int[,] charDeclare = new int[7, 7]
+        // { // VAR  iden =   char  ,  AS BOOL
+        //      {1,  -1, -1,  -1,  -1, -1, -1}, //0
+        //      {-1,  2, -1,  -1,   1, -1, -1}, //1
+        //      {-1, -1,  3,  -1,  -1, -1, -1}, //2
+        //      {-1,  2, -1,   4,  -1, -1, -1}, //3
+        //      {-1, -1, -1,  -1,   1,  5, -1}, //4
+        //      {-1, -1, -1,  -1,  -1, -1,  6}, //5
+        //      {-1, -1, -1,  -1,   1,  7, -1}, //6
+        // };
+
+        //  void checkCharDeclare(int index)
+        // {
+        //     int state = 0;
+        //     int x = index;
+
+        //     while (tokenList[x].lex != Lexeme.NEWLINE)
+        //     {
+        //         switch (tokenList[x].lex)
+        //         {
+        //             case Lexeme.VAR:
+        //                 state = DeclareDFA[state, 0];
+        //                 break;
+        //             case Lexeme.IDENTIFIER:
+        //                 state = DeclareDFA[state, 1];
+        //                 break;
+        //             case Lexeme.ASSIGN:
+        //                 state = DeclareDFA[state, 2];
+        //                 break;
+        //             case Lexeme.BOOLEAN:
+        //                 state = charDeclare[state, 4];
+        //                 break;
+        //             case Lexeme.COMMA:
+        //                 state = DeclareDFA[state, 6];
+        //                 break;
+        //             case Lexeme.STRING:
+        //             case Lexeme.NUMBER:
+        //             case Lexeme.CHARACTER:
+        //             case Lexeme.BOOLEAN:
+        //                 state = DeclareDFA[state, 4];
+        //                 break;
+        //             case Lexeme.AS:
+        //                 state = DeclareDFA[state, 5];
+        //                 break;
+        //             case Lexeme.INT:
+        //             case Lexeme.FLOAT:
+        //             case Lexeme.CHAR:
+        //             case Lexeme.BOOL:
+        //                 state = DeclareDFA[state, 6];
+        //                 break;
+        //             default:
+        //                 state = -1;
+        //                 break;
+        //         }
+
+        //         if (state == -1)
+        //         {
+        //             throw new ErrorException($"Illegal {tokenList[x].lex} on line {tokenList[x].line}.");
+        //         }
+
+        //         x++;
+        //     }
+        // }
+
+        // int[,] outputDFA = new int[4, 4]{
+        //     {1, -1, -1, -1},
+        //     {-1, 2, -1, -1},
+        //     {-1, -1, 3, -1},
+        //     {-1, -1, -1, 2}
+        // };
+        #endregion
+
     }
 }
