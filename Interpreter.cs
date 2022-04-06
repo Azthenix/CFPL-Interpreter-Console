@@ -26,7 +26,7 @@ namespace CFPL_Interpreter_Console
 	/* 0 */	{1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1},	// 0
 	/* 1 */	{-1,	2,	2,	2,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1},	// 1
 	/* 2 */	{-1,	-1,	-1,	-1,	3,	-1,	14,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	1,	12,	-1},	// 2
-	/* 3 */	{-1,	4,	11,	4,	-1,	7,	14,	-1,	5,	-1,	-1,	-1,	5,	-1,	6,	-1,	-1,	-1},	// 3
+	/* 3 */	{-1,	4,	11,	4,	-1,	7,	14,	10,	5,	-1,	-1,	-1,	5,	-1,	6,	-1,	-1,	-1},	// 3
 	/* 4 */	{-1,	-1,	-1,	-1,	3,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	6,	6,	1,	12,	-1},	// 4
 	/* 5 */	{-1,	7,	-1,	10,	-1,	7,	-1,	10,	5,	-1,	-1,	-1,	5,	-1,	6,	-1,	-1,	-1},	// 5
 	/* 6 */	{-1,	7,	-1,	-1,	-1,	7,	-1,	-1,	6,	-1,	-1,	-1,	-1,	-1,	6,	-1,	-1,	-1},	// 6
@@ -920,7 +920,7 @@ namespace CFPL_Interpreter_Console
 
 							break;
 						case bType.FLOAT:
-							if(res is not Int32 || res is not Single)
+							if(res is not Int32 && res is not Single && res is not Double && res is not Decimal)
 								throw new ErrorException($"Cannot assign "+(res is bool ? "BOOL" : "CHAR")+" to type FLOAT on line {tokenList[x].line}.");
 							
 							floatVars[tokenList[index].literal] = Convert.ToSingle(res);
@@ -1695,7 +1695,8 @@ namespace CFPL_Interpreter_Console
 					case Lexeme.AMP:
 						break;
 					default:
-						sb.Append(Evaluate(x, ref x));
+						Object res = Evaluate(x, ref x);
+						sb.Append(res is not bool ? res : Convert.ToBoolean(res) ? "\"TRUE\"" : "\"FALSE\"");
 						break;
 				}
 

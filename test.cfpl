@@ -1,7 +1,4 @@
-VAR a='c' AS CHAR
-VAR x=y=(-12+(3)), z AS INT
-VAR i=j=NOT "TRUE" AS BOOL
+VAR t = "TRUE" AS BOOL
 START
-    z=(-12+(3) + -x)
-    OUTPUT: x + 5 & "#" & y & "#" & z & "#" & NOT NOT NOT("TRUE" AND "FALSE") & a
+OUTPUT: t
 STOP
